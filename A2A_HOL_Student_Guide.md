@@ -452,9 +452,9 @@ Cortex Analyst usa il semantic model per tradurre domande in linguaggio naturale
 
 ### Opzione A: Creazione tramite Snowsight UI (Semantic View Creator)
 
-1. In Snowsight, cliccare su **Data** nel menu di sinistra
+1. In Snowsight, cliccare su **Catalog** nel menu di sinistra, poi selezionare **Database Explorer**
 2. Navigare a **POWERUTILITY > PUBLIC**
-3. Cliccare su **"+ Semantic View"** (pulsante in alto a destra)
+3. Cliccare su **Create** e selezionare **Semantic View**
 4. Dare il nome: `A2A_ENERGY_SEMANTIC_VIEW`
 5. Il Semantic View Creator si apre con un editor visuale
 
@@ -462,12 +462,18 @@ Cortex Analyst usa il semantic model per tradurre domande in linguaggio naturale
 - Cliccare **"Add Table"** e selezionare: `CLIENTI`, `CONSUMI_ENERGIA`, `FEEDBACK_CLIENTI`, `IMPIANTI`, `PRODUZIONE_ENERGIA`
 - Per ogni tabella, il sistema proporra' automaticamente dimensioni e metriche
 
+**Selezionare le colonne:**
+- Per ogni tabella aggiunta, espandere la lista delle colonne nel pannello laterale
+- **Selezionare tutte le colonne** che si vogliono rendere disponibili per le query in linguaggio naturale
+- Per il lab, selezionare **tutte le colonne** di ogni tabella (usare il checkbox "Select All" se disponibile)
+- Verificare che ogni colonna abbia una **descrizione** compilata: il wizard propone descrizioni automatiche, ma e' consigliato rivederle e correggerle per migliorare la qualita' delle risposte di Cortex Analyst
+
 **Configurare le relazioni:**
 - `CONSUMI_ENERGIA.CLIENTE_ID` → `CLIENTI.CLIENTE_ID`
 - `FEEDBACK_CLIENTI.CLIENTE_ID` → `CLIENTI.CLIENTE_ID`
 - `PRODUZIONE_ENERGIA.IMPIANTO_ID` → `IMPIANTI.IMPIANTO_ID`
 
-**Verificare i campi:** Per ogni tabella, controllare che dimensioni e metriche siano corrette.
+**Verificare i campi:** Per ogni tabella, controllare che tutte le colonne siano selezionate e che le descrizioni siano accurate. Colonne non selezionate non saranno accessibili tramite domande in linguaggio naturale.
 
 ### Opzione B: Creazione tramite SQL (Raccomandata per il lab)
 
@@ -668,7 +674,7 @@ AS SEMANTIC MODEL
 
 ## 2.3 Verifica Semantic View in Snowsight
 
-1. Navigare in **Data > POWERUTILITY > PUBLIC**
+1. Navigare in **Catalog > Database Explorer > POWERUTILITY > PUBLIC**
 2. Trovare la semantic view `A2A_ENERGY_SEMANTIC_VIEW`
 3. Cliccare sulla view per aprire il **Semantic View Creator**
 4. Verificare:
@@ -712,7 +718,7 @@ CREATE OR REPLACE STAGE POWERUTILITY.PUBLIC.DOCUMENTI_STAGE
 
 **Caricare il file PDF:**
 
-1. In Snowsight, navigare a **Data > POWERUTILITY > PUBLIC > Stages > DOCUMENTI_STAGE**
+1. In Snowsight, navigare a **Catalog > Database Explorer > POWERUTILITY > PUBLIC > Stages > DOCUMENTI_STAGE**
 2. Cliccare **"+ Files"** in alto a destra
 3. Selezionare il file `a2a_condizioni_generali_fornitura.pdf` dal proprio computer
 4. Attendere il completamento dell'upload
