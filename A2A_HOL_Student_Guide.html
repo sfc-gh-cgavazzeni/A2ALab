@@ -1225,218 +1225,34 @@
 <h2 id="71-creare-un-notebook-snowflake">7.1 Creare un Notebook Snowflake</h2>
 <ol>
 <li>In Snowsight, navigare su <strong>Notebooks</strong> nel menu di sinistra</li>
-<li>Cliccare <strong>"+ Notebook"</strong></li>
+<li>Cliccare sulla freccia accanto a <strong>"+ Notebook"</strong> e selezionare <strong>"Import .ipynb file"</strong></li>
+<li>Selezionare il file <code>A2A_AISQL_Lab.ipynb</code> dal proprio computer (disponibile nel repository del lab)</li>
 <li>Configurare:</li>
 <li><strong>Name:</strong> <code>A2A_AISQL_Lab</code></li>
 <li><strong>Database:</strong> <code>POWERUTILITY</code></li>
 <li><strong>Schema:</strong> <code>PUBLIC</code></li>
 <li><strong>Warehouse:</strong> <code>COMPUTE_WH</code></li>
-<li>Selezionare <strong>"SQL"</strong> come linguaggio della prima cella</li>
+<li>Cliccare <strong>"Create"</strong> per importare il notebook</li>
 </ol>
-<h2 id="72-celle-del-notebook">7.2 Celle del Notebook</h2>
-<h3 id="cella-1-markdown-intestazione">Cella 1 (Markdown): Intestazione</h3>
-<div class="codehilite"><pre><span></span><code><span class="gh"># Laboratorio AI SQL - A2A Energia</span>
-Esplorazione delle funzioni Cortex AI SQL sui dati energetici A2A.
-
-<span class="gs">**Funzioni testate:**</span>
-<span class="k">-</span><span class="w"> </span>SENTIMENT - Analisi del sentiment
-<span class="k">-</span><span class="w"> </span>SUMMARIZE - Riassunto automatico
-<span class="k">-</span><span class="w"> </span>TRANSLATE - Traduzione multilingua
-<span class="k">-</span><span class="w"> </span>COMPLETE - Prompt LLM generico
-<span class="k">-</span><span class="w"> </span>CLASSIFY - Classificazione automatica
-<span class="k">-</span><span class="w"> </span>EXTRACT - Estrazione entita&#39;
-</code></pre></div>
-
-<h3 id="cella-2-sql-setup">Cella 2 (SQL): Setup</h3>
-<div class="codehilite"><pre><span></span><code><span class="n">USE</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="n">POWERUTILITY</span><span class="p">;</span>
-<span class="n">USE</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="k">PUBLIC</span><span class="p">;</span>
-<span class="n">USE</span><span class="w"> </span><span class="n">WAREHOUSE</span><span class="w"> </span><span class="n">COMPUTE_WH</span><span class="p">;</span>
-</code></pre></div>
-
-<h3 id="cella-3-markdown-sentiment-analysis">Cella 3 (Markdown): Sentiment Analysis</h3>
-<div class="codehilite"><pre><span></span><code><span class="gu">## 1. Sentiment Analysis</span>
-Analizziamo il sentiment dei feedback clienti per identificare clienti insoddisfatti e aree di miglioramento.
-</code></pre></div>
-
-<h3 id="cella-4-sql-sentiment-sui-feedback">Cella 4 (SQL): Sentiment sui Feedback</h3>
-<div class="codehilite"><pre><span></span><code><span class="c1">-- Sentiment analysis su tutti i feedback</span>
-<span class="k">SELECT</span>
-<span class="w">    </span><span class="n">FEEDBACK_ID</span><span class="p">,</span>
-<span class="w">    </span><span class="n">CANALE</span><span class="p">,</span>
-<span class="w">    </span><span class="n">CATEGORIA</span><span class="p">,</span>
-<span class="w">    </span><span class="n">SUBSTR</span><span class="p">(</span><span class="n">TESTO_FEEDBACK</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">80</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="s1">&#39;...&#39;</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">TESTO_BREVE</span><span class="p">,</span>
-<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">SENTIMENT</span><span class="p">(</span><span class="n">TESTO_FEEDBACK</span><span class="p">),</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">SENTIMENT_SCORE</span><span class="p">,</span>
-<span class="w">    </span><span class="k">CASE</span>
-<span class="w">        </span><span class="k">WHEN</span><span class="w"> </span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">SENTIMENT</span><span class="p">(</span><span class="n">TESTO_FEEDBACK</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="s1">&#39;POSITIVO&#39;</span>
-<span class="w">        </span><span class="k">WHEN</span><span class="w"> </span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">SENTIMENT</span><span class="p">(</span><span class="n">TESTO_FEEDBACK</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="o">-</span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="s1">&#39;NEGATIVO&#39;</span>
-<span class="w">        </span><span class="k">ELSE</span><span class="w"> </span><span class="s1">&#39;NEUTRO&#39;</span>
-<span class="w">    </span><span class="k">END</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">SENTIMENT_LABEL</span>
-<span class="k">FROM</span><span class="w"> </span><span class="n">FEEDBACK_CLIENTI</span>
-<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">SENTIMENT_SCORE</span><span class="w"> </span><span class="k">ASC</span>
-<span class="k">LIMIT</span><span class="w"> </span><span class="mi">20</span><span class="p">;</span>
-</code></pre></div>
-
-<h3 id="cella-5-sql-statistiche-sentiment-per-categoria">Cella 5 (SQL): Statistiche Sentiment per Categoria</h3>
-<div class="codehilite"><pre><span></span><code><span class="c1">-- Statistiche sentiment aggregate per categoria</span>
-<span class="k">SELECT</span>
-<span class="w">    </span><span class="n">CATEGORIA</span><span class="p">,</span>
-<span class="w">    </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">NUM_FEEDBACK</span><span class="p">,</span>
-<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">SENTIMENT</span><span class="p">(</span><span class="n">TESTO_FEEDBACK</span><span class="p">)),</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">AVG_SENTIMENT</span><span class="p">,</span>
-<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="k">MIN</span><span class="p">(</span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">SENTIMENT</span><span class="p">(</span><span class="n">TESTO_FEEDBACK</span><span class="p">)),</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">MIN_SENTIMENT</span><span class="p">,</span>
-<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="k">MAX</span><span class="p">(</span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">SENTIMENT</span><span class="p">(</span><span class="n">TESTO_FEEDBACK</span><span class="p">)),</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">MAX_SENTIMENT</span><span class="p">,</span>
-<span class="w">    </span><span class="k">SUM</span><span class="p">(</span><span class="k">CASE</span><span class="w"> </span><span class="k">WHEN</span><span class="w"> </span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">SENTIMENT</span><span class="p">(</span><span class="n">TESTO_FEEDBACK</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="o">-</span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">ELSE</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">END</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">NEGATIVI</span><span class="p">,</span>
-<span class="w">    </span><span class="k">SUM</span><span class="p">(</span><span class="k">CASE</span><span class="w"> </span><span class="k">WHEN</span><span class="w"> </span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">SENTIMENT</span><span class="p">(</span><span class="n">TESTO_FEEDBACK</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">ELSE</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">END</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">POSITIVI</span>
-<span class="k">FROM</span><span class="w"> </span><span class="n">FEEDBACK_CLIENTI</span>
-<span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">CATEGORIA</span>
-<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">AVG_SENTIMENT</span><span class="w"> </span><span class="k">ASC</span><span class="p">;</span>
-</code></pre></div>
-
-<h3 id="cella-6-markdown-summarization">Cella 6 (Markdown): Summarization</h3>
-<div class="codehilite"><pre><span></span><code><span class="gu">## 2. Summarization</span>
-Generiamo riassunti automatici dei documenti tecnici per una rapida consultazione.
-</code></pre></div>
-
-<h3 id="cella-7-sql-riassunto-documenti-tecnici">Cella 7 (SQL): Riassunto Documenti Tecnici</h3>
-<div class="codehilite"><pre><span></span><code><span class="c1">-- Riassunto automatico dei documenti tecnici</span>
-<span class="k">SELECT</span>
-<span class="w">    </span><span class="n">TITOLO</span><span class="p">,</span>
-<span class="w">    </span><span class="n">TIPO_DOCUMENTO</span><span class="p">,</span>
-<span class="w">    </span><span class="n">AREA</span><span class="p">,</span>
-<span class="w">    </span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">SUMMARIZE</span><span class="p">(</span><span class="n">CONTENUTO</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">RIASSUNTO</span>
-<span class="k">FROM</span><span class="w"> </span><span class="n">DOCUMENTI_TECNICI</span>
-<span class="k">WHERE</span><span class="w"> </span><span class="n">TIPO_DOCUMENTO</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;REPORT&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;PROCEDURA&#39;</span><span class="p">)</span>
-<span class="k">LIMIT</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
-</code></pre></div>
-
-<h3 id="cella-8-markdown-traduzione">Cella 8 (Markdown): Traduzione</h3>
-<div class="codehilite"><pre><span></span><code><span class="gu">## 3. Traduzione Multilingua</span>
-Traduciamo i feedback dei clienti in inglese per report internazionali.
-</code></pre></div>
-
-<h3 id="cella-9-sql-traduzione-feedback">Cella 9 (SQL): Traduzione Feedback</h3>
-<div class="codehilite"><pre><span></span><code><span class="c1">-- Traduzione feedback in inglese e tedesco</span>
-<span class="k">SELECT</span>
-<span class="w">    </span><span class="n">FEEDBACK_ID</span><span class="p">,</span>
-<span class="w">    </span><span class="n">TESTO_FEEDBACK</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">ORIGINALE_IT</span><span class="p">,</span>
-<span class="w">    </span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="k">TRANSLATE</span><span class="p">(</span><span class="n">TESTO_FEEDBACK</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;it&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;en&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">TRADUZIONE_EN</span><span class="p">,</span>
-<span class="w">    </span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="k">TRANSLATE</span><span class="p">(</span><span class="n">TESTO_FEEDBACK</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;it&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;de&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">TRADUZIONE_DE</span>
-<span class="k">FROM</span><span class="w"> </span><span class="n">FEEDBACK_CLIENTI</span>
-<span class="k">LIMIT</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
-</code></pre></div>
-
-<h3 id="cella-10-markdown-ai-complete">Cella 10 (Markdown): AI Complete</h3>
-<div class="codehilite"><pre><span></span><code><span class="gu">## 4. AI Complete - Prompt Generici</span>
-Usiamo il modello LLM per analisi avanzate: categorizzazione, suggerimento azioni, generazione report.
-</code></pre></div>
-
-<h3 id="cella-11-sql-analisi-avanzata-con-ai_complete">Cella 11 (SQL): Analisi Avanzata con AI_COMPLETE</h3>
-<div class="codehilite"><pre><span></span><code><span class="c1">-- Analisi del feedback con suggerimento di azione</span>
-<span class="k">SELECT</span>
-<span class="w">    </span><span class="n">FEEDBACK_ID</span><span class="p">,</span>
-<span class="w">    </span><span class="n">CATEGORIA</span><span class="p">,</span>
-<span class="w">    </span><span class="n">TESTO_FEEDBACK</span><span class="p">,</span>
-<span class="w">    </span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">COMPLETE</span><span class="p">(</span>
-<span class="w">        </span><span class="s1">&#39;mistral-large2&#39;</span><span class="p">,</span>
-<span class="w">        </span><span class="n">CONCAT</span><span class="p">(</span>
-<span class="w">            </span><span class="s1">&#39;Sei un esperto di customer care nel settore energetico italiano. &#39;</span><span class="p">,</span>
-<span class="w">            </span><span class="s1">&#39;Analizza il seguente feedback di un cliente A2A e fornisci: &#39;</span><span class="p">,</span>
-<span class="w">            </span><span class="s1">&#39;1) Classificazione urgenza (CRITICA/ALTA/MEDIA/BASSA) &#39;</span><span class="p">,</span>
-<span class="w">            </span><span class="s1">&#39;2) Azione suggerita in una frase. &#39;</span><span class="p">,</span>
-<span class="w">            </span><span class="s1">&#39;Feedback: &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">TESTO_FEEDBACK</span>
-<span class="w">        </span><span class="p">)</span>
-<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">ANALISI_AI</span>
-<span class="k">FROM</span><span class="w"> </span><span class="n">FEEDBACK_CLIENTI</span>
-<span class="k">WHERE</span><span class="w"> </span><span class="n">PRIORITA</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;ALTA&#39;</span>
-<span class="k">LIMIT</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
-</code></pre></div>
-
-<h3 id="cella-12-sql-generazione-report-energetico">Cella 12 (SQL): Generazione Report Energetico</h3>
-<div class="codehilite"><pre><span></span><code><span class="c1">-- Generazione automatica di un mini-report con AI_COMPLETE</span>
-<span class="k">WITH</span><span class="w"> </span><span class="n">stats</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="p">(</span>
-<span class="w">    </span><span class="k">SELECT</span>
-<span class="w">        </span><span class="n">ROUND</span><span class="p">(</span><span class="k">SUM</span><span class="p">(</span><span class="n">CONSUMO_KWH</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">TOT_KWH</span><span class="p">,</span>
-<span class="w">        </span><span class="n">ROUND</span><span class="p">(</span><span class="k">SUM</span><span class="p">(</span><span class="n">CONSUMO_SMC</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">TOT_SMC</span><span class="p">,</span>
-<span class="w">        </span><span class="n">ROUND</span><span class="p">(</span><span class="k">SUM</span><span class="p">(</span><span class="n">COSTO_TOTALE_EUR</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">TOT_COSTO</span><span class="p">,</span>
-<span class="w">        </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">COSTO_TOTALE_EUR</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">AVG_COSTO</span><span class="p">,</span>
-<span class="w">        </span><span class="k">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span><span class="w"> </span><span class="n">CLIENTE_ID</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">NUM_CLIENTI</span>
-<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">CONSUMI_ENERGIA</span>
-<span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="n">MESE</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">DATEADD</span><span class="p">(</span><span class="s1">&#39;month&#39;</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="k">CURRENT_DATE</span><span class="p">())</span>
-<span class="p">)</span>
-<span class="k">SELECT</span><span class="w"> </span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">COMPLETE</span><span class="p">(</span>
-<span class="w">    </span><span class="s1">&#39;mistral-large2&#39;</span><span class="p">,</span>
-<span class="w">    </span><span class="n">CONCAT</span><span class="p">(</span>
-<span class="w">        </span><span class="s1">&#39;Genera un breve report in italiano (max 200 parole) sui consumi energetici A2A degli ultimi 3 mesi. &#39;</span><span class="p">,</span>
-<span class="w">        </span><span class="s1">&#39;Dati: Consumo totale elettricita&#39;&#39; = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">TOT_KWH</span><span class="p">::</span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; kWh, &#39;</span><span class="p">,</span>
-<span class="w">        </span><span class="s1">&#39;Consumo totale gas = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">TOT_SMC</span><span class="p">::</span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; smc, &#39;</span><span class="p">,</span>
-<span class="w">        </span><span class="s1">&#39;Costo totale = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">TOT_COSTO</span><span class="p">::</span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; EUR, &#39;</span><span class="p">,</span>
-<span class="w">        </span><span class="s1">&#39;Costo medio per cliente = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">AVG_COSTO</span><span class="p">::</span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; EUR, &#39;</span><span class="p">,</span>
-<span class="w">        </span><span class="s1">&#39;Clienti attivi = &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">NUM_CLIENTI</span><span class="p">::</span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;. &#39;</span><span class="p">,</span>
-<span class="w">        </span><span class="s1">&#39;Includi trend e raccomandazioni.&#39;</span>
-<span class="w">    </span><span class="p">)</span>
-<span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">REPORT_ENERGETICO</span>
-<span class="k">FROM</span><span class="w"> </span><span class="n">stats</span><span class="p">;</span>
-</code></pre></div>
-
-<h3 id="cella-13-markdown-classify">Cella 13 (Markdown): Classify</h3>
-<div class="codehilite"><pre><span></span><code><span class="gu">## 5. AI Classify - Classificazione Automatica</span>
-Classifichiamo automaticamente i feedback in categorie di urgenza.
-</code></pre></div>
-
-<h3 id="cella-14-sql-classificazione-feedback">Cella 14 (SQL): Classificazione Feedback</h3>
-<div class="codehilite"><pre><span></span><code><span class="c1">-- Classificazione automatica dei feedback</span>
-<span class="k">SELECT</span>
-<span class="w">    </span><span class="n">FEEDBACK_ID</span><span class="p">,</span>
-<span class="w">    </span><span class="n">TESTO_FEEDBACK</span><span class="p">,</span>
-<span class="w">    </span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">CLASSIFY_TEXT</span><span class="p">(</span>
-<span class="w">        </span><span class="n">TESTO_FEEDBACK</span><span class="p">,</span>
-<span class="w">        </span><span class="p">[</span><span class="s1">&#39;Problema tecnico urgente&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Richiesta informazioni&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Reclamo commerciale&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Complimento&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Richiesta modifica contratto&#39;</span><span class="p">]</span>
-<span class="w">    </span><span class="p">):</span><span class="n">label</span><span class="p">::</span><span class="nb">VARCHAR</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">CLASSIFICAZIONE</span><span class="p">,</span>
-<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">CLASSIFY_TEXT</span><span class="p">(</span>
-<span class="w">        </span><span class="n">TESTO_FEEDBACK</span><span class="p">,</span>
-<span class="w">        </span><span class="p">[</span><span class="s1">&#39;Problema tecnico urgente&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Richiesta informazioni&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Reclamo commerciale&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Complimento&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Richiesta modifica contratto&#39;</span><span class="p">]</span>
-<span class="w">    </span><span class="p">):</span><span class="n">score</span><span class="p">::</span><span class="nb">FLOAT</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">CONFIDENCE</span>
-<span class="k">FROM</span><span class="w"> </span><span class="n">FEEDBACK_CLIENTI</span>
-<span class="k">LIMIT</span><span class="w"> </span><span class="mi">15</span><span class="p">;</span>
-</code></pre></div>
-
-<h3 id="cella-15-markdown-extract">Cella 15 (Markdown): Extract</h3>
-<div class="codehilite"><pre><span></span><code><span class="gu">## 6. AI Extract - Estrazione Entita&#39;</span>
-Estraiamo informazioni strutturate dai testi dei feedback.
-</code></pre></div>
-
-<h3 id="cella-16-sql-estrazione-entita">Cella 16 (SQL): Estrazione Entita'</h3>
-<div class="codehilite"><pre><span></span><code><span class="c1">-- Estrazione entita&#39; dai feedback</span>
-<span class="k">SELECT</span>
-<span class="w">    </span><span class="n">FEEDBACK_ID</span><span class="p">,</span>
-<span class="w">    </span><span class="n">TESTO_FEEDBACK</span><span class="p">,</span>
-<span class="w">    </span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">EXTRACT_ANSWER</span><span class="p">(</span>
-<span class="w">        </span><span class="n">TESTO_FEEDBACK</span><span class="p">,</span>
-<span class="w">        </span><span class="s1">&#39;Qual e&#39;&#39; il problema principale segnalato dal cliente?&#39;</span>
-<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">PROBLEMA_PRINCIPALE</span><span class="p">,</span>
-<span class="w">    </span><span class="n">SNOWFLAKE</span><span class="p">.</span><span class="n">CORTEX</span><span class="p">.</span><span class="n">EXTRACT_ANSWER</span><span class="p">(</span>
-<span class="w">        </span><span class="n">TESTO_FEEDBACK</span><span class="p">,</span>
-<span class="w">        </span><span class="s1">&#39;Il cliente menziona una localita&#39;&#39; specifica?&#39;</span>
-<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">LOCALITA_MENZIONATA</span>
-<span class="k">FROM</span><span class="w"> </span><span class="n">FEEDBACK_CLIENTI</span>
-<span class="k">WHERE</span><span class="w"> </span><span class="n">CATEGORIA</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;GUASTI&#39;</span>
-<span class="k">LIMIT</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
-</code></pre></div>
-
-<h3 id="cella-17-markdown-conclusioni">Cella 17 (Markdown): Conclusioni</h3>
-<div class="codehilite"><pre><span></span><code><span class="gu">## Conclusioni</span>
-
-In questo laboratorio abbiamo visto come le funzioni AI SQL di Snowflake permettono di:
-
-<span class="k">-</span><span class="w"> </span><span class="gs">**Analizzare il sentiment**</span> dei feedback clienti per identificare criticita&#39;
-<span class="k">-</span><span class="w"> </span><span class="gs">**Riassumere automaticamente**</span> documenti tecnici complessi
-<span class="k">-</span><span class="w"> </span><span class="gs">**Tradurre**</span> contenuti per report multilingua
-<span class="k">-</span><span class="w"> </span><span class="gs">**Generare analisi**</span> e report con prompt LLM personalizzati
-<span class="k">-</span><span class="w"> </span><span class="gs">**Classificare**</span> automaticamente i feedback in categorie
-<span class="k">-</span><span class="w"> </span><span class="gs">**Estrarre**</span> informazioni strutturate da testi non strutturati
-
-Tutto questo senza mai spostare i dati fuori da Snowflake e con la governance RBAC integrata.
-</code></pre></div>
-
+<h2 id="72-eseguire-il-notebook">7.2 Eseguire il Notebook</h2>
+<p>Il notebook importato contiene celle Markdown di introduzione e celle SQL con le funzioni Cortex AI.</p>
+<ol>
+<li>Verificare che il warehouse <code>COMPUTE_WH</code> sia attivo nella barra in alto</li>
+<li>Eseguire le celle in ordine dall'alto verso il basso:</li>
+<li>Cliccare su ogni cella SQL e premere <strong>Cmd+Enter</strong> (Mac) o <strong>Ctrl+Enter</strong> (Windows) per eseguirla</li>
+<li>In alternativa, usare il pulsante <strong>"Run All"</strong> in alto per eseguire tutte le celle in sequenza</li>
+<li>Le celle coprono le seguenti funzioni AI SQL:</li>
+<li><strong>Sentiment Analysis</strong> - Analisi del sentiment sui feedback clienti</li>
+<li><strong>Summarize</strong> - Riassunto automatico di documenti tecnici</li>
+<li><strong>Translate</strong> - Traduzione multilingua dei feedback</li>
+<li><strong>AI Complete</strong> - Analisi avanzata e generazione report con LLM</li>
+<li><strong>Classify</strong> - Classificazione automatica dei feedback</li>
+<li><strong>Extract</strong> - Estrazione di entita' dai testi</li>
+<li>Osservare i risultati di ogni cella e confrontare gli output delle diverse funzioni AI</li>
+</ol>
+<blockquote>
+<p><strong>Nota:</strong> Alcune celle possono impiegare qualche secondo per completare, in quanto invocano modelli LLM. Attendere il completamento prima di procedere alla cella successiva.</p>
+</blockquote>
 <hr />
 <h1 id="appendice-a-troubleshooting">Appendice A: Troubleshooting</h1>
 <table>

@@ -1222,252 +1222,33 @@ LIMIT 3;
 ## 7.1 Creare un Notebook Snowflake
 
 1. In Snowsight, navigare su **Notebooks** nel menu di sinistra
-2. Cliccare **"+ Notebook"**
-3. Configurare:
+2. Cliccare sulla freccia accanto a **"+ Notebook"** e selezionare **"Import .ipynb file"**
+3. Selezionare il file `A2A_AISQL_Lab.ipynb` dal proprio computer (disponibile nel repository del lab)
+4. Configurare:
    - **Name:** `A2A_AISQL_Lab`
    - **Database:** `POWERUTILITY`
    - **Schema:** `PUBLIC`
    - **Warehouse:** `COMPUTE_WH`
-4. Selezionare **"SQL"** come linguaggio della prima cella
+5. Cliccare **"Create"** per importare il notebook
 
-## 7.2 Celle del Notebook
+## 7.2 Eseguire il Notebook
 
-### Cella 1 (Markdown): Intestazione
+Il notebook importato contiene celle Markdown di introduzione e celle SQL con le funzioni Cortex AI.
 
-```markdown
-# Laboratorio AI SQL - A2A Energia
-Esplorazione delle funzioni Cortex AI SQL sui dati energetici A2A.
+1. Verificare che il warehouse `COMPUTE_WH` sia attivo nella barra in alto
+2. Eseguire le celle in ordine dall'alto verso il basso:
+   - Cliccare su ogni cella SQL e premere **Cmd+Enter** (Mac) o **Ctrl+Enter** (Windows) per eseguirla
+   - In alternativa, usare il pulsante **"Run All"** in alto per eseguire tutte le celle in sequenza
+3. Le celle coprono le seguenti funzioni AI SQL:
+   - **Sentiment Analysis** - Analisi del sentiment sui feedback clienti
+   - **Summarize** - Riassunto automatico di documenti tecnici
+   - **Translate** - Traduzione multilingua dei feedback
+   - **AI Complete** - Analisi avanzata e generazione report con LLM
+   - **Classify** - Classificazione automatica dei feedback
+   - **Extract** - Estrazione di entita' dai testi
+4. Osservare i risultati di ogni cella e confrontare gli output delle diverse funzioni AI
 
-**Funzioni testate:**
-- SENTIMENT - Analisi del sentiment
-- SUMMARIZE - Riassunto automatico
-- TRANSLATE - Traduzione multilingua
-- COMPLETE - Prompt LLM generico
-- CLASSIFY - Classificazione automatica
-- EXTRACT - Estrazione entita'
-```
-
-### Cella 2 (SQL): Setup
-
-```sql
-USE DATABASE POWERUTILITY;
-USE SCHEMA PUBLIC;
-USE WAREHOUSE COMPUTE_WH;
-```
-
-### Cella 3 (Markdown): Sentiment Analysis
-
-```markdown
-## 1. Sentiment Analysis
-Analizziamo il sentiment dei feedback clienti per identificare clienti insoddisfatti e aree di miglioramento.
-```
-
-### Cella 4 (SQL): Sentiment sui Feedback
-
-```sql
--- Sentiment analysis su tutti i feedback
-SELECT
-    FEEDBACK_ID,
-    CANALE,
-    CATEGORIA,
-    SUBSTR(TESTO_FEEDBACK, 1, 80) || '...' AS TESTO_BREVE,
-    ROUND(SNOWFLAKE.CORTEX.SENTIMENT(TESTO_FEEDBACK), 3) AS SENTIMENT_SCORE,
-    CASE
-        WHEN SNOWFLAKE.CORTEX.SENTIMENT(TESTO_FEEDBACK) > 0.3 THEN 'POSITIVO'
-        WHEN SNOWFLAKE.CORTEX.SENTIMENT(TESTO_FEEDBACK) < -0.3 THEN 'NEGATIVO'
-        ELSE 'NEUTRO'
-    END AS SENTIMENT_LABEL
-FROM FEEDBACK_CLIENTI
-ORDER BY SENTIMENT_SCORE ASC
-LIMIT 20;
-```
-
-### Cella 5 (SQL): Statistiche Sentiment per Categoria
-
-```sql
--- Statistiche sentiment aggregate per categoria
-SELECT
-    CATEGORIA,
-    COUNT(*) AS NUM_FEEDBACK,
-    ROUND(AVG(SNOWFLAKE.CORTEX.SENTIMENT(TESTO_FEEDBACK)), 3) AS AVG_SENTIMENT,
-    ROUND(MIN(SNOWFLAKE.CORTEX.SENTIMENT(TESTO_FEEDBACK)), 3) AS MIN_SENTIMENT,
-    ROUND(MAX(SNOWFLAKE.CORTEX.SENTIMENT(TESTO_FEEDBACK)), 3) AS MAX_SENTIMENT,
-    SUM(CASE WHEN SNOWFLAKE.CORTEX.SENTIMENT(TESTO_FEEDBACK) < -0.3 THEN 1 ELSE 0 END) AS NEGATIVI,
-    SUM(CASE WHEN SNOWFLAKE.CORTEX.SENTIMENT(TESTO_FEEDBACK) > 0.3 THEN 1 ELSE 0 END) AS POSITIVI
-FROM FEEDBACK_CLIENTI
-GROUP BY CATEGORIA
-ORDER BY AVG_SENTIMENT ASC;
-```
-
-### Cella 6 (Markdown): Summarization
-
-```markdown
-## 2. Summarization
-Generiamo riassunti automatici dei documenti tecnici per una rapida consultazione.
-```
-
-### Cella 7 (SQL): Riassunto Documenti Tecnici
-
-```sql
--- Riassunto automatico dei documenti tecnici
-SELECT
-    TITOLO,
-    TIPO_DOCUMENTO,
-    AREA,
-    SNOWFLAKE.CORTEX.SUMMARIZE(CONTENUTO) AS RIASSUNTO
-FROM DOCUMENTI_TECNICI
-WHERE TIPO_DOCUMENTO IN ('REPORT', 'PROCEDURA')
-LIMIT 5;
-```
-
-### Cella 8 (Markdown): Traduzione
-
-```markdown
-## 3. Traduzione Multilingua
-Traduciamo i feedback dei clienti in inglese per report internazionali.
-```
-
-### Cella 9 (SQL): Traduzione Feedback
-
-```sql
--- Traduzione feedback in inglese e tedesco
-SELECT
-    FEEDBACK_ID,
-    TESTO_FEEDBACK AS ORIGINALE_IT,
-    SNOWFLAKE.CORTEX.TRANSLATE(TESTO_FEEDBACK, 'it', 'en') AS TRADUZIONE_EN,
-    SNOWFLAKE.CORTEX.TRANSLATE(TESTO_FEEDBACK, 'it', 'de') AS TRADUZIONE_DE
-FROM FEEDBACK_CLIENTI
-LIMIT 5;
-```
-
-### Cella 10 (Markdown): AI Complete
-
-```markdown
-## 4. AI Complete - Prompt Generici
-Usiamo il modello LLM per analisi avanzate: categorizzazione, suggerimento azioni, generazione report.
-```
-
-### Cella 11 (SQL): Analisi Avanzata con AI_COMPLETE
-
-```sql
--- Analisi del feedback con suggerimento di azione
-SELECT
-    FEEDBACK_ID,
-    CATEGORIA,
-    TESTO_FEEDBACK,
-    SNOWFLAKE.CORTEX.COMPLETE(
-        'mistral-large2',
-        CONCAT(
-            'Sei un esperto di customer care nel settore energetico italiano. ',
-            'Analizza il seguente feedback di un cliente A2A e fornisci: ',
-            '1) Classificazione urgenza (CRITICA/ALTA/MEDIA/BASSA) ',
-            '2) Azione suggerita in una frase. ',
-            'Feedback: ', TESTO_FEEDBACK
-        )
-    ) AS ANALISI_AI
-FROM FEEDBACK_CLIENTI
-WHERE PRIORITA = 'ALTA'
-LIMIT 5;
-```
-
-### Cella 12 (SQL): Generazione Report Energetico
-
-```sql
--- Generazione automatica di un mini-report con AI_COMPLETE
-WITH stats AS (
-    SELECT
-        ROUND(SUM(CONSUMO_KWH), 0) AS TOT_KWH,
-        ROUND(SUM(CONSUMO_SMC), 0) AS TOT_SMC,
-        ROUND(SUM(COSTO_TOTALE_EUR), 0) AS TOT_COSTO,
-        ROUND(AVG(COSTO_TOTALE_EUR), 2) AS AVG_COSTO,
-        COUNT(DISTINCT CLIENTE_ID) AS NUM_CLIENTI
-    FROM CONSUMI_ENERGIA
-    WHERE MESE >= DATEADD('month', -3, CURRENT_DATE())
-)
-SELECT SNOWFLAKE.CORTEX.COMPLETE(
-    'mistral-large2',
-    CONCAT(
-        'Genera un breve report in italiano (max 200 parole) sui consumi energetici A2A degli ultimi 3 mesi. ',
-        'Dati: Consumo totale elettricita'' = ', TOT_KWH::VARCHAR, ' kWh, ',
-        'Consumo totale gas = ', TOT_SMC::VARCHAR, ' smc, ',
-        'Costo totale = ', TOT_COSTO::VARCHAR, ' EUR, ',
-        'Costo medio per cliente = ', AVG_COSTO::VARCHAR, ' EUR, ',
-        'Clienti attivi = ', NUM_CLIENTI::VARCHAR, '. ',
-        'Includi trend e raccomandazioni.'
-    )
-) AS REPORT_ENERGETICO
-FROM stats;
-```
-
-### Cella 13 (Markdown): Classify
-
-```markdown
-## 5. AI Classify - Classificazione Automatica
-Classifichiamo automaticamente i feedback in categorie di urgenza.
-```
-
-### Cella 14 (SQL): Classificazione Feedback
-
-```sql
--- Classificazione automatica dei feedback
-SELECT
-    FEEDBACK_ID,
-    TESTO_FEEDBACK,
-    SNOWFLAKE.CORTEX.CLASSIFY_TEXT(
-        TESTO_FEEDBACK,
-        ['Problema tecnico urgente', 'Richiesta informazioni', 'Reclamo commerciale', 'Complimento', 'Richiesta modifica contratto']
-    ):label::VARCHAR AS CLASSIFICAZIONE,
-    ROUND(SNOWFLAKE.CORTEX.CLASSIFY_TEXT(
-        TESTO_FEEDBACK,
-        ['Problema tecnico urgente', 'Richiesta informazioni', 'Reclamo commerciale', 'Complimento', 'Richiesta modifica contratto']
-    ):score::FLOAT, 3) AS CONFIDENCE
-FROM FEEDBACK_CLIENTI
-LIMIT 15;
-```
-
-### Cella 15 (Markdown): Extract
-
-```markdown
-## 6. AI Extract - Estrazione Entita'
-Estraiamo informazioni strutturate dai testi dei feedback.
-```
-
-### Cella 16 (SQL): Estrazione Entita'
-
-```sql
--- Estrazione entita' dai feedback
-SELECT
-    FEEDBACK_ID,
-    TESTO_FEEDBACK,
-    SNOWFLAKE.CORTEX.EXTRACT_ANSWER(
-        TESTO_FEEDBACK,
-        'Qual e'' il problema principale segnalato dal cliente?'
-    ) AS PROBLEMA_PRINCIPALE,
-    SNOWFLAKE.CORTEX.EXTRACT_ANSWER(
-        TESTO_FEEDBACK,
-        'Il cliente menziona una localita'' specifica?'
-    ) AS LOCALITA_MENZIONATA
-FROM FEEDBACK_CLIENTI
-WHERE CATEGORIA = 'GUASTI'
-LIMIT 10;
-```
-
-### Cella 17 (Markdown): Conclusioni
-
-```markdown
-## Conclusioni
-
-In questo laboratorio abbiamo visto come le funzioni AI SQL di Snowflake permettono di:
-
-- **Analizzare il sentiment** dei feedback clienti per identificare criticita'
-- **Riassumere automaticamente** documenti tecnici complessi
-- **Tradurre** contenuti per report multilingua
-- **Generare analisi** e report con prompt LLM personalizzati
-- **Classificare** automaticamente i feedback in categorie
-- **Estrarre** informazioni strutturate da testi non strutturati
-
-Tutto questo senza mai spostare i dati fuori da Snowflake e con la governance RBAC integrata.
-```
+> **Nota:** Alcune celle possono impiegare qualche secondo per completare, in quanto invocano modelli LLM. Attendere il completamento prima di procedere alla cella successiva.
 
 ---
 
