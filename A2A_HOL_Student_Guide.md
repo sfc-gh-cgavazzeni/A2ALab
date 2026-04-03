@@ -190,7 +190,37 @@ SELECT
         WHEN 8 THEN 'Esposito' WHEN 9 THEN 'Ricci' WHEN 10 THEN 'Bruno' WHEN 11 THEN 'Greco'
         WHEN 12 THEN 'Moretti' WHEN 13 THEN 'Barbieri' ELSE 'Lombardi'
     END,
-    UPPER(SUBSTR(MD5(SEQ4()::VARCHAR), 1, 16)),
+    -- Codice Fiscale generato secondo lo standard italiano (CCCNNN AALMGG ZXXX K)
+    -- Parte cognome (3 consonanti)
+    CASE MOD(SEQ4(), 15)
+        WHEN 0 THEN 'RSS' WHEN 1 THEN 'BNC' WHEN 2 THEN 'CLM' WHEN 3 THEN 'FRR'
+        WHEN 4 THEN 'RSS' WHEN 5 THEN 'RMN' WHEN 6 THEN 'GLL' WHEN 7 THEN 'CNT'
+        WHEN 8 THEN 'SPT' WHEN 9 THEN 'RCC' WHEN 10 THEN 'BRN' WHEN 11 THEN 'GRC'
+        WHEN 12 THEN 'MRT' WHEN 13 THEN 'BRB' ELSE 'LMB'
+    END ||
+    -- Parte nome (3 consonanti/vocali)
+    CASE MOD(SEQ4(), 20)
+        WHEN 0 THEN 'MRC' WHEN 1 THEN 'GLI' WHEN 2 THEN 'LSN' WHEN 3 THEN 'FRN'
+        WHEN 4 THEN 'LCU' WHEN 5 THEN 'SRA' WHEN 6 THEN 'NDR' WHEN 7 THEN 'LNE'
+        WHEN 8 THEN 'RRT' WHEN 9 THEN 'CHR' WHEN 10 THEN 'GNN' WHEN 11 THEN 'MRA'
+        WHEN 12 THEN 'PLA' WHEN 13 THEN 'NNA' WHEN 14 THEN 'SFN' WHEN 15 THEN 'LRA'
+        WHEN 16 THEN 'DVD' WHEN 17 THEN 'VNT' WHEN 18 THEN 'MTT' ELSE 'SLV'
+    END ||
+    -- Anno nascita (2 cifre, persone tra 25 e 70 anni)
+    LPAD(MOD(56 + MOD(SEQ4() * 13, 45), 100)::VARCHAR, 2, '0') ||
+    -- Mese nascita (lettera codice mese italiano)
+    SUBSTR('ABCDEHLMPRST', MOD(SEQ4() * 7, 12) + 1, 1) ||
+    -- Giorno nascita (01-31, donne nomi dispari +40)
+    LPAD((MOD(SEQ4() * 3, 28) + 1 +
+        CASE WHEN MOD(SEQ4(), 20) IN (1,3,5,7,9,11,13,15,17,19) THEN 40 ELSE 0 END
+    )::VARCHAR, 2, '0') ||
+    -- Codice catastale comune (reale per le 8 citta')
+    CASE MOD(SEQ4(), 8)
+        WHEN 0 THEN 'F205' WHEN 1 THEN 'B157' WHEN 2 THEN 'A794' WHEN 3 THEN 'C933'
+        WHEN 4 THEN 'D150' WHEN 5 THEN 'L682' WHEN 6 THEN 'F704' ELSE 'G388'
+    END ||
+    -- Carattere di controllo (simulato deterministico)
+    SUBSTR('ABCDEFGHIJKLMNOPQRSTUVWXYZ', MOD(SEQ4() * 17, 26) + 1, 1),
     LOWER(
         CASE MOD(SEQ4(), 20)
             WHEN 0 THEN 'marco' WHEN 1 THEN 'giulia' WHEN 2 THEN 'alessandro' WHEN 3 THEN 'francesca'
