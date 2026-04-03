@@ -1,0 +1,12 @@
+Flask
+Werkzeug
+requests
+numpy
+pandas
+scipy
+matplotlib
+seaborn
+scikit-learn
+plotly
+prophet
+cmdstanpy>=1.0.0
