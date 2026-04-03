@@ -766,7 +766,7 @@ DESCRIBE SEMANTIC VIEW POWERUTILITY.PUBLIC.A2A_ENERGY_SEMANTIC_VIEW;
 
 1. In Snowsight, navigare a **Catalog > Database Explorer > POWERUTILITY > PUBLIC**
 2. Cliccare sulla semantic view `A2A_ENERGY_SEMANTIC_VIEW`
-3. Nella schermata della semantic view, cliccare sul pulsante **"Playground"** in alto a destra
+3. Nella schermata della semantic view, cliccare su **"... > Open with Cortex Analyst"** in alto a destra
 4. Si apre una chat interattiva dove e' possibile fare domande in linguaggio naturale sui dati
 
 **Provare i seguenti prompt di esempio:**
@@ -839,7 +839,7 @@ CREATE OR REPLACE TABLE POWERUTILITY.PUBLIC.CONTRATTO_CHUNKS (
 -- Prima verifichiamo il contenuto
 SELECT
     AI_PARSE_DOCUMENT(
-        BUILD_SCOPED_FILE_URL(@DOCUMENTI_STAGE, 'a2a_condizioni_generali_fornitura.pdf'),
+        TO_FILE('@DOCUMENTI_STAGE', 'a2a_condizioni_generali_fornitura.pdf'),
         {'mode': 'LAYOUT'}
     ):content::VARCHAR AS TESTO_COMPLETO;
 ```
@@ -854,7 +854,7 @@ WITH parsed AS (
     SELECT
         'a2a_condizioni_generali_fornitura.pdf' AS NOME_FILE,
         AI_PARSE_DOCUMENT(
-            BUILD_SCOPED_FILE_URL(@DOCUMENTI_STAGE, 'a2a_condizioni_generali_fornitura.pdf'),
+            TO_FILE('@DOCUMENTI_STAGE', 'a2a_condizioni_generali_fornitura.pdf'),
             {'mode': 'LAYOUT'}
         ):content::VARCHAR AS TESTO_COMPLETO
 ),
@@ -931,8 +931,8 @@ Permette agli utenti di fare domande in linguaggio naturale e ottenere risposte 
 
 ## 4.2 Creare l'Agente Snowflake Intelligence
 
-1. In Snowsight, navigare su **AI & ML > Snowflake Intelligence** (menu di sinistra)
-2. Cliccare **"+ Intelligence"** in alto a destra
+1. In Snowsight, navigare su **AI & ML > Agents > Snowflake Intelligence** (menu di sinistra)
+2. Cliccare **"Create Agent"** in alto a destra
 3. Configurare:
    - **Name:** `A2A_ENERGY_ASSISTANT`
    - **Database:** `POWERUTILITY`
@@ -943,17 +943,19 @@ Permette agli utenti di fare domande in linguaggio naturale e ottenere risposte 
    - Nella sezione **Tools**, cliccare **"+ Add Tool"**
    - Selezionare **"Analyst (Semantic View)"**
    - Scegliere `POWERUTILITY.PUBLIC.A2A_ENERGY_SEMANTIC_VIEW`
-   - Description: `Interroga i dati strutturati su clienti, consumi energetici, impianti di produzione e feedback`
+   - Description: `Interroga_i_dati_strutturati_su_clienti_consumi_energetici_impianti_di_produzione_e_feedback`
 
 5. **Aggiungere il Cortex Search come strumento:**
    - Cliccare **"+ Add Tool"**
    - Selezionare **"Search Service"**
    - Scegliere `POWERUTILITY.PUBLIC.A2A_CONTRATTO_SEARCH`
-   - Description: `Cerca informazioni nelle Condizioni Generali di Fornitura A2A`
+   - **ID Column:** `NOME_FILE`
+   - **Title Column:** `SEZIONE`
+   - Description: `Cerca_informazioni_nelle_Condizioni_Generali_di_Fornitura_A2A`
 
 6. **Configurare le istruzioni dell'agente** (opzionale ma consigliato):
 
-Nella sezione **Instructions**, aggiungere:
+Nella sezione **Orchestration**, aggiungere:
 
 ```
 Sei l'assistente AI di A2A Energia. Rispondi sempre in italiano.

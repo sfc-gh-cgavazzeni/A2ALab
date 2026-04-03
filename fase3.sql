@@ -13,7 +13,7 @@ CREATE OR REPLACE STAGE POWERUTILITY.PUBLIC.DOCUMENTI_STAGE
     ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE');
 
 --- NOTA: Caricare il PDF tramite Snowsight UI:
---- Data > POWERUTILITY > PUBLIC > Stages > DOCUMENTI_STAGE > + Files
+--- Catalog > Database Explorer > POWERUTILITY > PUBLIC > Stages > DOCUMENTI_STAGE > + Files
 --- Selezionare: a2a_condizioni_generali_fornitura.pdf
 
 --- Verifica che il file sia stato caricato
@@ -22,7 +22,7 @@ LIST @POWERUTILITY.PUBLIC.DOCUMENTI_STAGE;
 --- Estrarre il testo dal PDF usando AI_PARSE_DOCUMENT (test)
 SELECT
     AI_PARSE_DOCUMENT(
-        BUILD_SCOPED_FILE_URL(@DOCUMENTI_STAGE, 'a2a_condizioni_generali_fornitura.pdf'),
+        TO_FILE('@DOCUMENTI_STAGE', 'a2a_condizioni_generali_fornitura.pdf'),
         {'mode': 'LAYOUT'}
     ):content::VARCHAR AS TESTO_COMPLETO;
 
@@ -32,7 +32,7 @@ WITH parsed AS (
     SELECT
         'a2a_condizioni_generali_fornitura.pdf' AS NOME_FILE,
         AI_PARSE_DOCUMENT(
-            BUILD_SCOPED_FILE_URL(@DOCUMENTI_STAGE, 'a2a_condizioni_generali_fornitura.pdf'),
+            TO_FILE('@DOCUMENTI_STAGE', 'a2a_condizioni_generali_fornitura.pdf'),
             {'mode': 'LAYOUT'}
         ):content::VARCHAR AS TESTO_COMPLETO
 ),

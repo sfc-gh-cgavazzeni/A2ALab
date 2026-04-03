@@ -774,7 +774,7 @@
 <ol>
 <li>In Snowsight, navigare a <strong>Catalog &gt; Database Explorer &gt; POWERUTILITY &gt; PUBLIC</strong></li>
 <li>Cliccare sulla semantic view <code>A2A_ENERGY_SEMANTIC_VIEW</code></li>
-<li>Nella schermata della semantic view, cliccare sul pulsante <strong>"Playground"</strong> in alto a destra</li>
+<li>Nella schermata della semantic view, cliccare su <strong>"... &gt; Open with Cortex Analyst"</strong> in alto a destra</li>
 <li>Si apre una chat interattiva dove e' possibile fare domande in linguaggio naturale sui dati</li>
 </ol>
 <p><strong>Provare i seguenti prompt di esempio:</strong></p>
@@ -832,7 +832,7 @@
 <span class="c1">-- Prima verifichiamo il contenuto</span>
 <span class="k">SELECT</span>
 <span class="w">    </span><span class="n">AI_PARSE_DOCUMENT</span><span class="p">(</span>
-<span class="w">        </span><span class="n">BUILD_SCOPED_FILE_URL</span><span class="p">(</span><span class="o">@</span><span class="n">DOCUMENTI_STAGE</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;a2a_condizioni_generali_fornitura.pdf&#39;</span><span class="p">),</span>
+<span class="w">        </span><span class="n">TO_FILE</span><span class="p">(</span><span class="s1">&#39;@DOCUMENTI_STAGE&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;a2a_condizioni_generali_fornitura.pdf&#39;</span><span class="p">),</span>
 <span class="w">        </span><span class="err">{</span><span class="s1">&#39;mode&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;LAYOUT&#39;</span><span class="err">}</span>
 <span class="w">    </span><span class="p">):</span><span class="n">content</span><span class="p">::</span><span class="nb">VARCHAR</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">TESTO_COMPLETO</span><span class="p">;</span>
 </code></pre></div>
@@ -845,7 +845,7 @@
 <span class="w">    </span><span class="k">SELECT</span>
 <span class="w">        </span><span class="s1">&#39;a2a_condizioni_generali_fornitura.pdf&#39;</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">NOME_FILE</span><span class="p">,</span>
 <span class="w">        </span><span class="n">AI_PARSE_DOCUMENT</span><span class="p">(</span>
-<span class="w">            </span><span class="n">BUILD_SCOPED_FILE_URL</span><span class="p">(</span><span class="o">@</span><span class="n">DOCUMENTI_STAGE</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;a2a_condizioni_generali_fornitura.pdf&#39;</span><span class="p">),</span>
+<span class="w">            </span><span class="n">TO_FILE</span><span class="p">(</span><span class="s1">&#39;@DOCUMENTI_STAGE&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;a2a_condizioni_generali_fornitura.pdf&#39;</span><span class="p">),</span>
 <span class="w">            </span><span class="err">{</span><span class="s1">&#39;mode&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;LAYOUT&#39;</span><span class="err">}</span>
 <span class="w">        </span><span class="p">):</span><span class="n">content</span><span class="p">::</span><span class="nb">VARCHAR</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">TESTO_COMPLETO</span>
 <span class="p">),</span>
@@ -914,8 +914,8 @@
 <p>Permette agli utenti di fare domande in linguaggio naturale e ottenere risposte che combinano dati e documenti.</p>
 <h2 id="42-creare-lagente-snowflake-intelligence">4.2 Creare l'Agente Snowflake Intelligence</h2>
 <ol>
-<li>In Snowsight, navigare su <strong>AI &amp; ML &gt; Snowflake Intelligence</strong> (menu di sinistra)</li>
-<li>Cliccare <strong>"+ Intelligence"</strong> in alto a destra</li>
+<li>In Snowsight, navigare su <strong>AI &amp; ML &gt; Agents &gt; Snowflake Intelligence</strong> (menu di sinistra)</li>
+<li>Cliccare <strong>"Create Agent"</strong> in alto a destra</li>
 <li>Configurare:</li>
 <li><strong>Name:</strong> <code>A2A_ENERGY_ASSISTANT</code></li>
 <li><strong>Database:</strong> <code>POWERUTILITY</code></li>
@@ -930,7 +930,7 @@
 <li>Selezionare <strong>"Analyst (Semantic View)"</strong></li>
 <li>Scegliere <code>POWERUTILITY.PUBLIC.A2A_ENERGY_SEMANTIC_VIEW</code></li>
 <li>
-<p>Description: <code>Interroga i dati strutturati su clienti, consumi energetici, impianti di produzione e feedback</code></p>
+<p>Description: <code>Interroga_i_dati_strutturati_su_clienti_consumi_energetici_impianti_di_produzione_e_feedback</code></p>
 </li>
 <li>
 <p><strong>Aggiungere il Cortex Search come strumento:</strong></p>
@@ -938,14 +938,16 @@
 <li>Cliccare <strong>"+ Add Tool"</strong></li>
 <li>Selezionare <strong>"Search Service"</strong></li>
 <li>Scegliere <code>POWERUTILITY.PUBLIC.A2A_CONTRATTO_SEARCH</code></li>
+<li><strong>ID Column:</strong> <code>NOME_FILE</code></li>
+<li><strong>Title Column:</strong> <code>SEZIONE</code></li>
 <li>
-<p>Description: <code>Cerca informazioni nelle Condizioni Generali di Fornitura A2A</code></p>
+<p>Description: <code>Cerca_informazioni_nelle_Condizioni_Generali_di_Fornitura_A2A</code></p>
 </li>
 <li>
 <p><strong>Configurare le istruzioni dell'agente</strong> (opzionale ma consigliato):</p>
 </li>
 </ol>
-<p>Nella sezione <strong>Instructions</strong>, aggiungere:</p>
+<p>Nella sezione <strong>Orchestration</strong>, aggiungere:</p>
 <div class="codehilite"><pre><span></span><code><span class="n">Sei</span><span class="w"> </span><span class="n">l</span><span class="s1">&#39;assistente AI di A2A Energia. Rispondi sempre in italiano.</span>
 
 <span class="n">Quando</span><span class="w"> </span><span class="n">ti</span><span class="w"> </span><span class="n">vengono</span><span class="w"> </span><span class="n">poste</span><span class="w"> </span><span class="n">domande</span><span class="w"> </span><span class="n">sui</span><span class="w"> </span><span class="n">dati</span><span class="w"> </span><span class="p">(</span><span class="n">clienti</span><span class="p">,</span><span class="w"> </span><span class="n">consumi</span><span class="p">,</span><span class="w"> </span><span class="n">impianti</span><span class="p">,</span><span class="w"> </span><span class="n">produzione</span><span class="p">,</span><span class="w"> </span><span class="n">feedback</span><span class="p">),</span><span class="w"> </span><span class="n">usa</span><span class="w"> </span><span class="n">lo</span><span class="w"> </span><span class="n">strumento</span><span class="w"> </span><span class="n">di</span><span class="w"> </span><span class="n">analisi</span><span class="w"> </span><span class="n">dati</span><span class="w"> </span><span class="n">per</span><span class="w"> </span><span class="n">generare</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="n">SQL</span><span class="w"> </span><span class="n">precise</span><span class="o">.</span>
