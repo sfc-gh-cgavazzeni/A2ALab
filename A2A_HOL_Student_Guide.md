@@ -762,6 +762,32 @@ SHOW SEMANTIC VIEWS IN SCHEMA POWERUTILITY.PUBLIC;
 DESCRIBE SEMANTIC VIEW POWERUTILITY.PUBLIC.A2A_ENERGY_SEMANTIC_VIEW;
 ```
 
+### Test nel Playground di Cortex Analyst
+
+1. In Snowsight, navigare a **Catalog > Database Explorer > POWERUTILITY > PUBLIC**
+2. Cliccare sulla semantic view `A2A_ENERGY_SEMANTIC_VIEW`
+3. Nella schermata della semantic view, cliccare sul pulsante **"Playground"** in alto a destra
+4. Si apre una chat interattiva dove e' possibile fare domande in linguaggio naturale sui dati
+
+**Provare i seguenti prompt di esempio:**
+
+**Prompt 1 - Analisi consumi per citta':**
+```
+Quali sono le 5 citta' con il consumo totale di energia elettrica piu' alto?
+```
+
+**Prompt 2 - Analisi costi per segmento cliente:**
+```
+Qual e' il costo medio mensile in bolletta per ogni segmento cliente (BASE, STANDARD, PREMIUM)?
+```
+
+**Prompt 3 - Produzione e margine per tipo impianto:**
+```
+Mostrami la produzione totale in MWh e il margine di produzione per ogni tipo di impianto
+```
+
+> **Suggerimento:** Per ogni risposta, Cortex Analyst mostra la query SQL generata. Verificare che la query sia corretta e che i risultati abbiano senso. Se le risposte non sono soddisfacenti, tornare al Semantic View Creator e migliorare le descrizioni o aggiungere sinonimi.
+
 ---
 
 # FASE 3: Setup Cortex Search (RAG su Contratti)

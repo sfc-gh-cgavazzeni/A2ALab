@@ -770,6 +770,29 @@
 <span class="k">DESCRIBE</span><span class="w"> </span><span class="n">SEMANTIC</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="n">POWERUTILITY</span><span class="p">.</span><span class="k">PUBLIC</span><span class="p">.</span><span class="n">A2A_ENERGY_SEMANTIC_VIEW</span><span class="p">;</span>
 </code></pre></div>
 
+<h3 id="test-nel-playground-di-cortex-analyst">Test nel Playground di Cortex Analyst</h3>
+<ol>
+<li>In Snowsight, navigare a <strong>Catalog &gt; Database Explorer &gt; POWERUTILITY &gt; PUBLIC</strong></li>
+<li>Cliccare sulla semantic view <code>A2A_ENERGY_SEMANTIC_VIEW</code></li>
+<li>Nella schermata della semantic view, cliccare sul pulsante <strong>"Playground"</strong> in alto a destra</li>
+<li>Si apre una chat interattiva dove e' possibile fare domande in linguaggio naturale sui dati</li>
+</ol>
+<p><strong>Provare i seguenti prompt di esempio:</strong></p>
+<p><strong>Prompt 1 - Analisi consumi per citta':</strong></p>
+<div class="codehilite"><pre><span></span><code>Quali sono le 5 citta&#39; con il consumo totale di energia elettrica piu&#39; alto?
+</code></pre></div>
+
+<p><strong>Prompt 2 - Analisi costi per segmento cliente:</strong></p>
+<div class="codehilite"><pre><span></span><code>Qual e&#39; il costo medio mensile in bolletta per ogni segmento cliente (BASE, STANDARD, PREMIUM)?
+</code></pre></div>
+
+<p><strong>Prompt 3 - Produzione e margine per tipo impianto:</strong></p>
+<div class="codehilite"><pre><span></span><code>Mostrami la produzione totale in MWh e il margine di produzione per ogni tipo di impianto
+</code></pre></div>
+
+<blockquote>
+<p><strong>Suggerimento:</strong> Per ogni risposta, Cortex Analyst mostra la query SQL generata. Verificare che la query sia corretta e che i risultati abbiano senso. Se le risposte non sono soddisfacenti, tornare al Semantic View Creator e migliorare le descrizioni o aggiungere sinonimi.</p>
+</blockquote>
 <hr />
 <h1 id="fase-3-setup-cortex-search-rag-su-contratti">FASE 3: Setup Cortex Search (RAG su Contratti)</h1>
 <p>In questa fase configureremo <strong>Cortex Search</strong> per indicizzare il PDF delle Condizioni Generali di Fornitura di A2A, abilitando la ricerca semantica (RAG - Retrieval Augmented Generation).</p>
