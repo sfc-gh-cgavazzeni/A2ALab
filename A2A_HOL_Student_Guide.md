@@ -739,9 +739,9 @@ CREATE OR REPLACE SEMANTIC VIEW POWERUTILITY.PUBLIC.A2A_ENERGY_SEMANTIC_VIEW
 
 ## 2.3 Verifica Semantic View in Snowsight
 
-1. Navigare in **Catalog > Database Explorer > POWERUTILITY > PUBLIC**
-2. Trovare la semantic view `A2A_ENERGY_SEMANTIC_VIEW`
-3. Cliccare sulla view per aprire il **Semantic View Creator**
+1. Navigare in **AI & ML > Analyst**
+2. Verificare che siano impostati **POWERUTILITY.PUBLIC** come Database e Schema
+3. Selezionare la semantic view `A2A_ENERGY_SEMANTIC_VIEW`
 4. Verificare:
    - **Tabelle:** Tutte e 5 le tabelle sono presenti con i nomi logici corretti
    - **Colonne:** Le descrizioni sono compilate per ogni colonna
@@ -750,7 +750,7 @@ CREATE OR REPLACE SEMANTIC VIEW POWERUTILITY.PUBLIC.A2A_ENERGY_SEMANTIC_VIEW
 
 > **Suggerimento:** Nel Semantic View Creator potete anche aggiungere metriche calcolate e sinonimi per migliorare la comprensione delle domande in linguaggio naturale.
 
-## 2.4 Test Rapido della Semantic View
+## 2.4 (OPZIONALE) Test Rapido della Semantic View
 
 In un SQL Worksheet, testare:
 
@@ -764,10 +764,8 @@ DESCRIBE SEMANTIC VIEW POWERUTILITY.PUBLIC.A2A_ENERGY_SEMANTIC_VIEW;
 
 ### Test nel Playground di Cortex Analyst
 
-1. In Snowsight, navigare a **Catalog > Database Explorer > POWERUTILITY > PUBLIC**
-2. Cliccare sulla semantic view `A2A_ENERGY_SEMANTIC_VIEW`
-3. Nella schermata della semantic view, cliccare su **"... > Open with Cortex Analyst"** in alto a destra
-4. Si apre una chat interattiva dove e' possibile fare domande in linguaggio naturale sui dati
+1. Sul lato destro usa **Playground** per testare
+2. Si apre una chat interattiva dove e' possibile fare domande in linguaggio naturale sui dati
 
 **Provare i seguenti prompt di esempio:**
 
@@ -823,7 +821,7 @@ LIST @POWERUTILITY.PUBLIC.DOCUMENTI_STAGE;
 
 ## 3.3 Parsing del PDF con AI_PARSE_DOCUMENT
 
-Estraiamo il testo dal PDF e lo salviamo in una tabella per l'indicizzazione.
+Estraiamo il testo dal PDF e lo salviamo in una tabella per l'indicizzazione. I modelli di ricerca semantica e i LLM lavorano su testo, non su file binari come i PDF. Per poter indicizzare e cercare il contenuto di un documento, dobbiamo prima estrarne il testo. La funzione `AI_PARSE_DOCUMENT` analizza il layout del PDF e restituisce il contenuto testuale strutturato, preservando l'ordine di lettura.
 
 ```sql
 -- Creare la tabella per il contenuto estratto dai documenti
@@ -844,7 +842,13 @@ SELECT
     ):content::VARCHAR AS TESTO_COMPLETO;
 ```
 
-Ora creiamo i chunk per la ricerca. Per semplicita' nel lab, splittiamo il testo in parti:
+Ora creiamo i chunk per la ricerca. Un **chunk** e' un frammento di testo di dimensione controllata. La suddivisione in chunk e' necessaria perche' i modelli di embedding hanno un limite massimo di token in input, e perche' chunk piu' piccoli permettono risultati di ricerca piu' precisi e pertinenti. La dimensione ideale del chunk dipende dal caso d'uso:
+
+- **Chunk piccoli (~500 caratteri):** alta precisione, ma rischio di perdere contesto
+- **Chunk medi (~1000-2000 caratteri):** buon compromesso tra precisione e contesto
+- **Chunk grandi (~3000-4000 caratteri):** piu' contesto, ma meno precisione nella ricerca
+
+In questo lab usiamo chunk da 2000 caratteri, un buon compromesso per documenti contrattuali:
 
 ```sql
 -- Estrarre e suddividere il contenuto in chunk
@@ -877,12 +881,24 @@ SELECT
 FROM numbered
 WHERE LENGTH(CONTENUTO) > 10;
 
+-- NOTA: Questa operazione puo' richiedere fino a 10 minuti perche' AI_PARSE_DOCUMENT
+-- deve analizzare il PDF pagina per pagina, estrarre il testo e ricostruire il layout.
+
 -- Verificare i chunk creati
 SELECT COUNT(*) AS NUM_CHUNKS, AVG(LENGTH(CONTENUTO)) AS AVG_LENGTH
 FROM CONTRATTO_CHUNKS;
 ```
 
 ## 3.4 Creare il Cortex Search Service
+
+Quando si crea un Cortex Search Service, Snowflake esegue automaticamente diversi passaggi:
+
+1. **Generazione embedding:** Ogni chunk di testo viene trasformato in un vettore numerico (embedding) usando un modello interno, che cattura il significato semantico del testo
+2. **Costruzione indice vettoriale:** Viene costruito un indice ottimizzato per la ricerca per similarita' tra vettori
+3. **Esposizione endpoint API:** Viene creato un endpoint API che accetta query in linguaggio naturale e restituisce i chunk piu' rilevanti
+4. **Aggiornamento automatico:** L'indice viene mantenuto aggiornato in base al `TARGET_LAG` configurato (in questo caso, ogni ora)
+
+Il risultato e' un servizio di ricerca semantica pronto all'uso, integrabile direttamente con Cortex Agent come strumento di retrieval (RAG).
 
 ```sql
 CREATE OR REPLACE CORTEX SEARCH SERVICE POWERUTILITY.PUBLIC.A2A_CONTRATTO_SEARCH

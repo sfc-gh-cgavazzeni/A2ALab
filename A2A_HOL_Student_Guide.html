@@ -749,9 +749,9 @@
 
 <h2 id="23-verifica-semantic-view-in-snowsight">2.3 Verifica Semantic View in Snowsight</h2>
 <ol>
-<li>Navigare in <strong>Catalog &gt; Database Explorer &gt; POWERUTILITY &gt; PUBLIC</strong></li>
-<li>Trovare la semantic view <code>A2A_ENERGY_SEMANTIC_VIEW</code></li>
-<li>Cliccare sulla view per aprire il <strong>Semantic View Creator</strong></li>
+<li>Navigare in <strong>AI &amp; ML &gt; Analyst</strong></li>
+<li>Verificare che siano impostati <strong>POWERUTILITY.PUBLIC</strong> come Database e Schema</li>
+<li>Selezionare la semantic view <code>A2A_ENERGY_SEMANTIC_VIEW</code></li>
 <li>Verificare:</li>
 <li><strong>Tabelle:</strong> Tutte e 5 le tabelle sono presenti con i nomi logici corretti</li>
 <li><strong>Colonne:</strong> Le descrizioni sono compilate per ogni colonna</li>
@@ -761,7 +761,7 @@
 <blockquote>
 <p><strong>Suggerimento:</strong> Nel Semantic View Creator potete anche aggiungere metriche calcolate e sinonimi per migliorare la comprensione delle domande in linguaggio naturale.</p>
 </blockquote>
-<h2 id="24-test-rapido-della-semantic-view">2.4 Test Rapido della Semantic View</h2>
+<h2 id="24-test-rapido-della-semantic-view">2.4 (OPZIONALE) Test Rapido della Semantic View</h2>
 <p>In un SQL Worksheet, testare:</p>
 <div class="codehilite"><pre><span></span><code><span class="c1">-- Verifica che la semantic view sia stata creata</span>
 <span class="k">SHOW</span><span class="w"> </span><span class="n">SEMANTIC</span><span class="w"> </span><span class="n">VIEWS</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="n">POWERUTILITY</span><span class="p">.</span><span class="k">PUBLIC</span><span class="p">;</span>
@@ -772,9 +772,7 @@
 
 <h3 id="test-nel-playground-di-cortex-analyst">Test nel Playground di Cortex Analyst</h3>
 <ol>
-<li>In Snowsight, navigare a <strong>Catalog &gt; Database Explorer &gt; POWERUTILITY &gt; PUBLIC</strong></li>
-<li>Cliccare sulla semantic view <code>A2A_ENERGY_SEMANTIC_VIEW</code></li>
-<li>Nella schermata della semantic view, cliccare su <strong>"... &gt; Open with Cortex Analyst"</strong> in alto a destra</li>
+<li>Sul lato destro usa <strong>Playground</strong> per testare</li>
 <li>Si apre una chat interattiva dove e' possibile fare domande in linguaggio naturale sui dati</li>
 </ol>
 <p><strong>Provare i seguenti prompt di esempio:</strong></p>
@@ -818,7 +816,7 @@
 </code></pre></div>
 
 <h2 id="33-parsing-del-pdf-con-ai_parse_document">3.3 Parsing del PDF con AI_PARSE_DOCUMENT</h2>
-<p>Estraiamo il testo dal PDF e lo salviamo in una tabella per l'indicizzazione.</p>
+<p>Estraiamo il testo dal PDF e lo salviamo in una tabella per l'indicizzazione. I modelli di ricerca semantica e i LLM lavorano su testo, non su file binari come i PDF. Per poter indicizzare e cercare il contenuto di un documento, dobbiamo prima estrarne il testo. La funzione <code>AI_PARSE_DOCUMENT</code> analizza il layout del PDF e restituisce il contenuto testuale strutturato, preservando l'ordine di lettura.</p>
 <div class="codehilite"><pre><span></span><code><span class="c1">-- Creare la tabella per il contenuto estratto dai documenti</span>
 <span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">POWERUTILITY</span><span class="p">.</span><span class="k">PUBLIC</span><span class="p">.</span><span class="n">CONTRATTO_CHUNKS</span><span class="w"> </span><span class="p">(</span>
 <span class="w">    </span><span class="n">CHUNK_ID</span><span class="w"> </span><span class="nb">NUMBER</span><span class="w"> </span><span class="n">AUTOINCREMENT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
@@ -837,7 +835,13 @@
 <span class="w">    </span><span class="p">):</span><span class="n">content</span><span class="p">::</span><span class="nb">VARCHAR</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">TESTO_COMPLETO</span><span class="p">;</span>
 </code></pre></div>
 
-<p>Ora creiamo i chunk per la ricerca. Per semplicita' nel lab, splittiamo il testo in parti:</p>
+<p>Ora creiamo i chunk per la ricerca. Un <strong>chunk</strong> e' un frammento di testo di dimensione controllata. La suddivisione in chunk e' necessaria perche' i modelli di embedding hanno un limite massimo di token in input, e perche' chunk piu' piccoli permettono risultati di ricerca piu' precisi e pertinenti. La dimensione ideale del chunk dipende dal caso d'uso:</p>
+<ul>
+<li><strong>Chunk piccoli (~500 caratteri):</strong> alta precisione, ma rischio di perdere contesto</li>
+<li><strong>Chunk medi (~1000-2000 caratteri):</strong> buon compromesso tra precisione e contesto</li>
+<li><strong>Chunk grandi (~3000-4000 caratteri):</strong> piu' contesto, ma meno precisione nella ricerca</li>
+</ul>
+<p>In questo lab usiamo chunk da 2000 caratteri, un buon compromesso per documenti contrattuali:</p>
 <div class="codehilite"><pre><span></span><code><span class="c1">-- Estrarre e suddividere il contenuto in chunk</span>
 <span class="c1">-- Approccio: estraiamo il testo completo e lo dividiamo in sezioni logiche</span>
 <span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">POWERUTILITY</span><span class="p">.</span><span class="k">PUBLIC</span><span class="p">.</span><span class="n">CONTRATTO_CHUNKS</span><span class="w"> </span><span class="k">AS</span>
@@ -868,12 +872,23 @@
 <span class="k">FROM</span><span class="w"> </span><span class="n">numbered</span>
 <span class="k">WHERE</span><span class="w"> </span><span class="k">LENGTH</span><span class="p">(</span><span class="n">CONTENUTO</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
 
+<span class="c1">-- NOTA: Questa operazione puo' richiedere fino a 10 minuti perche' AI_PARSE_DOCUMENT</span>
+<span class="c1">-- deve analizzare il PDF pagina per pagina, estrarre il testo e ricostruire il layout.</span>
+
 <span class="c1">-- Verificare i chunk creati</span>
 <span class="k">SELECT</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">NUM_CHUNKS</span><span class="p">,</span><span class="w"> </span><span class="k">AVG</span><span class="p">(</span><span class="k">LENGTH</span><span class="p">(</span><span class="n">CONTENUTO</span><span class="p">))</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">AVG_LENGTH</span>
 <span class="k">FROM</span><span class="w"> </span><span class="n">CONTRATTO_CHUNKS</span><span class="p">;</span>
 </code></pre></div>
 
 <h2 id="34-creare-il-cortex-search-service">3.4 Creare il Cortex Search Service</h2>
+<p>Quando si crea un Cortex Search Service, Snowflake esegue automaticamente diversi passaggi:</p>
+<ol>
+<li><strong>Generazione embedding:</strong> Ogni chunk di testo viene trasformato in un vettore numerico (embedding) usando un modello interno, che cattura il significato semantico del testo</li>
+<li><strong>Costruzione indice vettoriale:</strong> Viene costruito un indice ottimizzato per la ricerca per similarita' tra vettori</li>
+<li><strong>Esposizione endpoint API:</strong> Viene creato un endpoint API che accetta query in linguaggio naturale e restituisce i chunk piu' rilevanti</li>
+<li><strong>Aggiornamento automatico:</strong> L'indice viene mantenuto aggiornato in base al <code>TARGET_LAG</code> configurato (in questo caso, ogni ora)</li>
+</ol>
+<p>Il risultato e' un servizio di ricerca semantica pronto all'uso, integrabile direttamente con Cortex Agent come strumento di retrieval (RAG).</p>
 <div class="codehilite"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="n">CORTEX</span><span class="w"> </span><span class="k">SEARCH</span><span class="w"> </span><span class="n">SERVICE</span><span class="w"> </span><span class="n">POWERUTILITY</span><span class="p">.</span><span class="k">PUBLIC</span><span class="p">.</span><span class="n">A2A_CONTRATTO_SEARCH</span>
 <span class="w">  </span><span class="k">ON</span><span class="w"> </span><span class="n">CONTENUTO</span>
 <span class="w">  </span><span class="n">ATTRIBUTES</span><span class="w"> </span><span class="n">SEZIONE</span><span class="p">,</span><span class="w"> </span><span class="n">NOME_FILE</span>
