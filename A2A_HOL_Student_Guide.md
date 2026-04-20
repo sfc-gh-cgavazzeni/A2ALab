@@ -44,7 +44,7 @@
 
 ## 1.1 Setup Iniziale
 
-Aprire un **SQL Worksheet** in Snowsight ed eseguire il seguente script.
+Aprire dal menu di sinistra **Projects > Worksheets** e quindi in alto a destra cliccare **+ > SQL Worksheet** ed eseguire il seguente script.
 
 ```sql
 --------------------------------------------------------------
@@ -63,6 +63,27 @@ CREATE SCHEMA IF NOT EXISTS PUBLIC;
 USE SCHEMA PUBLIC;
 USE WAREHOUSE COMPUTE_WH;
 ```
+
+Ora creeremo un'integrazione con un repository GitHub pubblico che contiene tutti i file SQL necessari per il lab. Questo ci permettera' di creare un Workspace collegato al repo, cosi' da avere tutti gli script pronti all'uso senza doverli copiare manualmente.
+
+```sql
+--------------------------------------------------------------
+-- INTEGRAZIONE CON GITHUB
+--------------------------------------------------------------
+CREATE OR REPLACE API INTEGRATION GIT_A2ALAB
+    API_PROVIDER = GIT_HTTPS_API
+    API_ALLOWED_PREFIXES = ('https://github.com/sfc-gh-cgavazzeni/A2ALab')
+    ENABLED = TRUE;
+
+CREATE OR REPLACE GIT REPOSITORY POWERUTILITY.PUBLIC.A2ALAB_REPO
+    API_INTEGRATION = GIT_A2ALAB
+    ORIGIN = 'https://github.com/sfc-gh-cgavazzeni/A2ALab.git';
+
+-- Verificare il contenuto del repository
+SHOW GIT BRANCHES IN POWERUTILITY.PUBLIC.A2ALAB_REPO;
+```
+
+> **Nota:** Dopo aver creato il Git Repository, potete navigare in **Projects > Worksheets** e cliccare **+ > Create from Repository** per creare un Workspace collegato al repo con tutti gli script SQL gia' pronti.
 
 ## 1.2 Creazione Tabelle
 
@@ -746,7 +767,8 @@ CREATE OR REPLACE SEMANTIC VIEW POWERUTILITY.PUBLIC.A2A_ENERGY_SEMANTIC_VIEW
    - **Tabelle:** Tutte e 5 le tabelle sono presenti con i nomi logici corretti
    - **Colonne:** Le descrizioni sono compilate per ogni colonna
    - **Relazioni:** Le 3 relazioni (CONSUMI→CLIENTI, FEEDBACK→CLIENTI, PRODUZIONE→IMPIANTI) sono visualizzate nel diagramma
-   - **Anteprima:** Cliccare su una tabella per vedere l'anteprima dei dati
+   - **Derived Metrics:** Verificare le metriche derivate e come sono state calcolate (formula e tabelle di riferimento)
+   - **Warnings:** Verificare eventuali warnings in alto di fianco al tasto "Edit Yaml"
 
 > **Suggerimento:** Nel Semantic View Creator potete anche aggiungere metriche calcolate e sinonimi per migliorare la comprensione delle domande in linguaggio naturale.
 
@@ -947,7 +969,7 @@ Permette agli utenti di fare domande in linguaggio naturale e ottenere risposte 
 
 ## 4.2 Creare l'Agente Snowflake Intelligence
 
-1. In Snowsight, navigare su **AI & ML > Agents > Snowflake Intelligence** (menu di sinistra)
+1. In Snowsight, navigare su **AI & ML > Agents**
 2. Cliccare **"Create Agent"** in alto a destra
 3. Configurare:
    - **Name:** `A2A_ENERGY_ASSISTANT`
